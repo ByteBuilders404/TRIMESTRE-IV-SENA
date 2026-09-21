@@ -1,0 +1,785 @@
+/* ANIMACIONES GENERALES */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-left {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-right {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scale-up {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.04);
+    }
+}
+
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes pulse-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 rgba(161, 0, 255, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(161, 0, 255, 0.25);
+    }
+}
+
+@keyframes bounce-slow {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes rotate-in {
+    from {
+        opacity: 0;
+        transform: rotate(-5deg) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: rotate(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ANIMACIONES DE ENTRADA */
+
+.animate-fade-in {
+    animation: fade-in 0.55s ease-out both;
+}
+
+.animate-fade-out {
+    animation: fade-out 0.35s ease-in both;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.55s ease-out both;
+}
+
+.animate-slide-down {
+    animation: slide-down 0.55s ease-out both;
+}
+
+.animate-slide-left {
+    animation: slide-left 0.55s ease-out both;
+}
+
+.animate-slide-right {
+    animation: slide-right 0.55s ease-out both;
+}
+
+.animate-scale-in {
+    animation: scale-in 0.45s ease-out both;
+}
+
+.animate-rotate-in {
+    animation: rotate-in 0.5s ease-out both;
+}
+
+
+/* ANIMACIONES CONTINUAS */
+
+.animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+}
+
+.animate-float {
+    animation: float 3.5s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+    animation: pulse-soft 2.5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+
+/* RETARDOS */
+
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+.delay-400 {
+    animation-delay: 0.4s;
+}
+
+.delay-500 {
+    animation-delay: 0.5s;
+}
+
+.delay-600 {
+    animation-delay: 0.6s;
+}
+
+.delay-700 {
+    animation-delay: 0.7s;
+}
+
+.delay-800 {
+    animation-delay: 0.8s;
+}
+
+.delay-1000 {
+    animation-delay: 1s;
+}
+
+
+/* TRANSICIONES GENERALES */
+
+.transition-all {
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease,
+        box-shadow 0.3s ease,
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.transition-fast {
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.transition-slow {
+    transition:
+        transform 0.5s ease,
+        opacity 0.5s ease,
+        box-shadow 0.5s ease,
+        background-color 0.5s ease;
+}
+
+
+/* HOVER GENERAL */
+
+.hover-lift {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.04);
+}
+
+.hover-scale-small {
+    transition: transform 0.25s ease;
+}
+
+.hover-scale-small:hover {
+    transform: scale(1.02);
+}
+
+.hover-glow {
+    transition:
+        box-shadow 0.3s ease,
+        transform 0.3s ease;
+}
+
+.hover-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(161, 0, 255, 0.25);
+}
+
+
+/* BOTONES */
+
+.btn-animated {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.btn-animated:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.18);
+}
+
+.btn-animated:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-purple-hover {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        background-color 0.25s ease;
+}
+
+.btn-purple-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(161, 0, 255, 0.25);
+}
+
+
+/* TARJETAS */
+
+.card-animated {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.card-animated:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+}
+
+.product-card-animated {
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.product-card-animated:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+}
+
+.product-card-animated img {
+    transition:
+        transform 0.4s ease,
+        filter 0.4s ease;
+}
+
+.product-card-animated:hover img {
+    transform: scale(1.05);
+}
+
+
+/* IMÁGENES */
+
+.image-zoom {
+    overflow: hidden;
+}
+
+.image-zoom img {
+    transition:
+        transform 0.45s ease,
+        filter 0.45s ease;
+}
+
+.image-zoom:hover img {
+    transform: scale(1.06);
+}
+
+.image-hover {
+    transition:
+        transform 0.35s ease,
+        filter 0.35s ease;
+}
+
+.image-hover:hover {
+    transform: scale(1.04);
+}
+
+
+/* SIDEBAR */
+
+.sidebar-animated {
+    transition:
+        width 0.35s ease,
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+.sidebar-item-animated {
+    transition:
+        transform 0.25s ease,
+        background-color 0.25s ease,
+        color 0.25s ease,
+        padding-left 0.25s ease;
+}
+
+.sidebar-item-animated:hover {
+    transform: translateX(4px);
+}
+
+.sidebar-item-animated i {
+    transition: transform 0.25s ease;
+}
+
+.sidebar-item-animated:hover i {
+    transform: translateX(2px) scale(1.05);
+}
+
+
+/* MENÚ */
+
+.nav-item-animated {
+    position: relative;
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.nav-item-animated:hover {
+    transform: translateY(-1px);
+}
+
+.nav-item-animated::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transform: translateX(-50%);
+    transition: width 0.25s ease;
+}
+
+.nav-item-animated:hover::after {
+    width: 70%;
+}
+
+
+/* LOGO */
+
+.logo-animated {
+    transition:
+        transform 0.3s ease,
+        filter 0.3s ease;
+}
+
+.logo-animated:hover {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 12px rgba(161, 0, 255, 0.3));
+}
+
+
+/* ICONOS */
+
+.icon-animated {
+    transition:
+        transform 0.25s ease,
+        color 0.25s ease;
+}
+
+.icon-animated:hover {
+    transform: scale(1.12);
+}
+
+.icon-bounce:hover {
+    animation: bounce-slow 0.8s ease;
+}
+
+
+/* CARRITO */
+
+.cart-animated {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.cart-animated:hover {
+    transform: translateY(-2px);
+}
+
+.cart-badge {
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease;
+}
+
+.cart-animated:hover .cart-badge {
+    transform: scale(1.1);
+}
+
+
+/* FORMULARIOS */
+
+.form-animated .form-control,
+.form-animated .form-select,
+.form-animated textarea {
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.form-animated .form-control:focus,
+.form-animated .form-select:focus,
+.form-animated textarea:focus {
+    transform: translateY(-1px);
+}
+
+.input-animated {
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.input-animated:focus {
+    transform: translateY(-1px);
+}
+
+
+/* MODALES */
+
+.modal-animated .modal-content {
+    animation: scale-in 0.3s ease-out both;
+}
+
+.modal-animated .modal-dialog {
+    transition: transform 0.3s ease;
+}
+
+
+/* ALERTAS */
+
+.alert-animated {
+    animation: slide-down 0.4s ease-out both;
+}
+
+.alert-animated:hover {
+    transform: translateY(-2px);
+    transition: transform 0.25s ease;
+}
+
+
+/* BADGES Y ESTADOS */
+
+.status-animated {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.status-animated:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+
+/* TABLAS */
+
+.table-animated tbody tr {
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.table-animated tbody tr:hover {
+    transform: translateX(3px);
+}
+
+
+/* ESTADÍSTICAS */
+
+.stat-card-animated {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.stat-card-animated:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.16);
+}
+
+.stat-icon-animated {
+    transition:
+        transform 0.3s ease,
+        filter 0.3s ease;
+}
+
+.stat-card-animated:hover .stat-icon-animated {
+    transform: scale(1.1);
+}
+
+
+/* SECCIONES */
+
+.section-animated {
+    animation: fade-in 0.6s ease-out both;
+}
+
+.section-reveal {
+    animation: slide-up 0.65s ease-out both;
+}
+
+
+/* LOADING */
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(161, 0, 255, 0.15);
+    border-top-color: #a100ff;
+    border-radius: 50%;
+    animation: spinner 0.8s linear infinite;
+}
+
+.loading-pulse {
+    animation: pulse-soft 1.5s ease-in-out infinite;
+}
+
+
+/* SKELETON */
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 25%,
+        rgba(255, 255, 255, 0.12) 50%,
+        rgba(255, 255, 255, 0.05) 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s linear infinite;
+}
+
+
+/* PÁGINAS */
+
+.page-animated {
+    animation: fade-in 0.5s ease-out both;
+}
+
+.page-slide-up {
+    animation: slide-up 0.6s ease-out both;
+}
+
+
+/* ELEMENTOS QUE APARECEN EN SECUENCIA */
+
+.stagger > * {
+    animation: fade-in 0.5s ease-out both;
+}
+
+.stagger > *:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.stagger > *:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.stagger > *:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.stagger > *:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.stagger > *:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.stagger > *:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.stagger > *:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.stagger > *:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.stagger > *:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.stagger > *:nth-child(10) {
+    animation-delay: 0.5s;
+}
+
+
+/* EFECTO PARA SECCIONES AL PASAR EL MOUSE */
+
+.interactive {
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        opacity 0.3s ease;
+}
+
+.interactive:hover {
+    transform: translateY(-3px);
+}
+
+
+/* DESACTIVAR ANIMACIONES PARA USUARIOS QUE LO PREFIERAN */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .hover-lift:hover,
+    .card-animated:hover,
+    .product-card-animated:hover,
+    .stat-card-animated:hover {
+        transform: translateY(-3px);
+    }
+
+    .product-card-animated:hover img {
+        transform: scale(1.03);
+    }
+}
