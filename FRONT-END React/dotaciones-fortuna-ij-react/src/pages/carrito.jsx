@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../services/supabase";
 
 function Carrito() {
     const navigate = useNavigate();
@@ -159,13 +160,13 @@ function Carrito() {
                 0
             );
 
-        const subtotal =
+        const total =
             carrito.reduce(
-                (total, item) => {
+                (acumulado, item) => {
                     const producto = item.producto;
 
                     return (
-                        total +
+                        acumulado +
                         Number(producto?.precio || 0) *
                         Number(item.cantidad || 1)
                     );
@@ -193,9 +194,7 @@ function Carrito() {
                     <br />
 
                     <strong>
-                        Total: $${subtotal.toLocaleString(
-                            "es-CO"
-                        )}
+                        Total: $${total.toLocaleString("es-CO")}
                     </strong>
                 </div>
             `,
@@ -209,55 +208,42 @@ function Carrito() {
             return;
         }
 
-        const pedidos =
-            JSON.parse(
-                localStorage.getItem("pedidos")
-            ) || [];
+        const nombreCliente =
+            usuario.user_metadata?.nombre ||
+            usuario.email?.split("@")[0] ||
+            "Cliente";
 
-        const total = carrito.reduce(
-            (acumulado, item) => {
-                const producto = item.producto;
+        const { data, error } = await supabase
+            .from("pedidos")
+            .insert({
+                usuario_id: usuario.id,
+                cliente_nombre: nombreCliente,
+                cliente_email: usuario.email,
+                productos: carrito,
+                cantidad_productos: cantidadProductos,
+                total: total,
+                estado: "Recibido"
+            })
+            .select()
+            .single();
 
-                return (
-                    acumulado +
-                    Number(producto?.precio || 0) *
-                    Number(item.cantidad || 1)
-                );
-            },
-            0
-        );
+        if (error) {
+            console.error(
+                "Error al guardar el pedido:",
+                error
+            );
 
-        const nuevoPedido = {
-            id: `PED-${String(
-                pedidos.length + 1
-            ).padStart(3, "0")}`,
+            await Swal.fire({
+                icon: "error",
+                title: "No se pudo registrar el pedido",
+                text:
+                    error.message ||
+                    "Ocurrió un error al guardar el pedido.",
+                confirmButtonText: "Aceptar"
+            });
 
-            fecha:
-                new Date().toISOString(),
-
-            cliente:
-                usuario.user_metadata?.nombre ||
-                usuario.email?.split("@")[0] ||
-                "Cliente",
-
-            email: usuario.email,
-
-            productos: carrito,
-
-            cantidadProductos,
-
-            total,
-
-            estado: "Recibido"
-        };
-
-        localStorage.setItem(
-            "pedidos",
-            JSON.stringify([
-                ...pedidos,
-                nuevoPedido
-            ])
-        );
+            return;
+        }
 
         localStorage.removeItem("carrito");
 
@@ -266,7 +252,7 @@ function Carrito() {
         await Swal.fire({
             icon: "success",
             title: "Pedido confirmado",
-            text: `Tu pedido ${nuevoPedido.id} fue registrado correctamente.`,
+            text: `Tu pedido fue registrado correctamente con el número #${data.id}.`,
             confirmButtonText: "Ver mis pedidos"
         });
 

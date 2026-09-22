@@ -21,10 +21,15 @@ function PedidosAdmin() {
     const [ordenFecha, setOrdenFecha] = useState("reciente");
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
     const [actualizando, setActualizando] = useState(false);
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        cargarUsuario();
-        cargarPedidos();
+        const iniciar = async () => {
+            await cargarUsuario();
+            await cargarPedidos();
+        };
+
+        iniciar();
     }, []);
 
     const cargarUsuario = async () => {
@@ -35,34 +40,25 @@ function PedidosAdmin() {
         }
     };
 
-    const cargarPedidos = () => {
-        const guardados = localStorage.getItem("pedidos");
+    const cargarPedidos = async () => {
+        setCargando(true);
 
-        if (!guardados) {
+        const { data, error } = await supabase
+            .from("pedidos")
+            .select("*")
+            .order("fecha", {
+                ascending: false
+            });
+
+        if (error) {
+            console.error("Error al cargar pedidos:", error);
             setPedidos([]);
+            setCargando(false);
             return;
         }
 
-        try {
-            const pedidosGuardados = JSON.parse(guardados);
-
-            if (Array.isArray(pedidosGuardados)) {
-                setPedidos(pedidosGuardados);
-            } else {
-                setPedidos([]);
-            }
-        } catch {
-            setPedidos([]);
-        }
-    };
-
-    const guardarPedidos = (pedidosActualizados) => {
-        setPedidos(pedidosActualizados);
-
-        localStorage.setItem(
-            "pedidos",
-            JSON.stringify(pedidosActualizados)
-        );
+        setPedidos(data || []);
+        setCargando(false);
     };
 
     const obtenerNombreUsuario = () => {
@@ -93,12 +89,22 @@ function PedidosAdmin() {
 
     const obtenerCliente = (pedido) => {
         return (
+            pedido?.cliente_nombre ||
             pedido?.cliente ||
             pedido?.nombreCliente ||
             pedido?.nombre ||
             pedido?.usuario ||
+            pedido?.cliente_email ||
             pedido?.email ||
             "Cliente"
+        );
+    };
+
+    const obtenerEmailCliente = (pedido) => {
+        return (
+            pedido?.cliente_email ||
+            pedido?.email ||
+            "Sin correo"
         );
     };
 
@@ -119,15 +125,19 @@ function PedidosAdmin() {
     };
 
     const obtenerCantidadProductos = (pedido) => {
-        const productos = obtenerProductos(pedido);
+        const cantidadDirecta =
+            pedido?.cantidad_productos ??
+            pedido?.cantidadProductos ??
+            pedido?.cantidad;
 
-        if (productos.length === 0) {
-            return Number(
-                pedido?.cantidadProductos ||
-                    pedido?.cantidad ||
-                    0
-            );
+        if (
+            cantidadDirecta !== undefined &&
+            cantidadDirecta !== null
+        ) {
+            return Number(cantidadDirecta) || 0;
         }
+
+        const productos = obtenerProductos(pedido);
 
         return productos.reduce((total, producto) => {
             return (
@@ -161,7 +171,8 @@ function PedidosAdmin() {
 
         return productos.reduce((total, producto) => {
             const precio = Number(
-                producto?.precio ||
+                producto?.producto?.precio ||
+                    producto?.precio ||
                     producto?.price ||
                     producto?.valor ||
                     0
@@ -209,6 +220,28 @@ function PedidosAdmin() {
         });
     };
 
+    const formatearFechaCompleta = (pedido) => {
+        const fecha = obtenerFecha(pedido);
+
+        if (!fecha) {
+            return "Sin fecha";
+        }
+
+        const fechaObjeto = new Date(fecha);
+
+        if (Number.isNaN(fechaObjeto.getTime())) {
+            return String(fecha);
+        }
+
+        return fechaObjeto.toLocaleString("es-CO", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    };
+
     const formatearMoneda = (valor) => {
         return new Intl.NumberFormat("es-CO", {
             style: "currency",
@@ -252,43 +285,49 @@ function PedidosAdmin() {
         }
     };
 
-    const cambiarEstado = (pedido, nuevoEstado) => {
-        const indice = pedidos.indexOf(pedido);
-
-        if (indice === -1) {
+    const cambiarEstado = async (pedido, nuevoEstado) => {
+        if (!pedido?.id || actualizando) {
             return;
         }
 
-        const pedidosActualizados = pedidos.map(
-            (item, itemIndex) => {
-                if (itemIndex !== indice) {
-                    return item;
-                }
+        setActualizando(true);
 
-                return {
-                    ...item,
-                    estado: nuevoEstado,
-                    status: nuevoEstado
-                };
-            }
+        const { data, error } = await supabase
+            .from("pedidos")
+            .update({
+                estado: nuevoEstado,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", pedido.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Error al actualizar estado:", error);
+            setActualizando(false);
+            return;
+        }
+
+        setPedidos((pedidosActuales) =>
+            pedidosActuales.map((item) =>
+                item.id === pedido.id
+                    ? data
+                    : item
+            )
         );
 
-        guardarPedidos(pedidosActualizados);
-
         setPedidoSeleccionado((actual) => {
-            if (!actual) {
+            if (!actual || actual.id !== pedido.id) {
                 return actual;
             }
 
-            return {
-                ...actual,
-                estado: nuevoEstado,
-                status: nuevoEstado
-            };
+            return data;
         });
+
+        setActualizando(false);
     };
 
-    const avanzarPedido = (pedido) => {
+    const avanzarPedido = async (pedido) => {
         const estadoActual = obtenerEstado(pedido);
         const indiceEstado = estadosPedido.indexOf(estadoActual);
 
@@ -299,13 +338,13 @@ function PedidosAdmin() {
             return;
         }
 
-        cambiarEstado(
+        await cambiarEstado(
             pedido,
             estadosPedido[indiceEstado + 1]
         );
     };
 
-    const retrocederPedido = (pedido) => {
+    const retrocederPedido = async (pedido) => {
         const estadoActual = obtenerEstado(pedido);
         const indiceEstado = estadosPedido.indexOf(estadoActual);
 
@@ -313,20 +352,18 @@ function PedidosAdmin() {
             return;
         }
 
-        cambiarEstado(
+        await cambiarEstado(
             pedido,
             estadosPedido[indiceEstado - 1]
         );
     };
 
-    const actualizarPedidos = () => {
+    const actualizarPedidos = async () => {
         setActualizando(true);
 
-        cargarPedidos();
+        await cargarPedidos();
 
-        setTimeout(() => {
-            setActualizando(false);
-        }, 500);
+        setActualizando(false);
     };
 
     const exportarPedidos = () => {
@@ -335,11 +372,12 @@ function PedidosAdmin() {
         }
 
         const encabezado =
-            "Pedido;Cliente;Productos;Total;Estado;Fecha";
+            "Pedido;Cliente;Correo;Productos;Total;Estado;Fecha";
 
         const filas = pedidos.map((pedido, indice) => {
             const id = obtenerIdPedido(pedido, indice);
             const cliente = obtenerCliente(pedido);
+            const email = obtenerEmailCliente(pedido);
             const cantidad = obtenerCantidadProductos(pedido);
             const total = obtenerTotal(pedido);
             const estado = obtenerEstado(pedido);
@@ -348,6 +386,7 @@ function PedidosAdmin() {
             return [
                 id,
                 cliente,
+                email,
                 cantidad,
                 total,
                 estado,
@@ -359,7 +398,10 @@ function PedidosAdmin() {
                 .join(";");
         });
 
-        const contenido = [encabezado, ...filas].join("\n");
+        const contenido = [
+            encabezado,
+            ...filas
+        ].join("\n");
 
         const blob = new Blob(
             ["\ufeff" + contenido],
@@ -391,16 +433,27 @@ function PedidosAdmin() {
                 obtenerCliente(pedido)
             ).toLowerCase();
 
+            const email = String(
+                obtenerEmailCliente(pedido)
+            ).toLowerCase();
+
+            const textoBusqueda =
+                busqueda.toLowerCase();
+
             const coincideBusqueda =
-                id.includes(busqueda.toLowerCase()) ||
-                cliente.includes(busqueda.toLowerCase());
+                id.includes(textoBusqueda) ||
+                cliente.includes(textoBusqueda) ||
+                email.includes(textoBusqueda);
 
             const coincideEstado =
                 !estadoFiltro ||
                 obtenerEstado(pedido).toLowerCase() ===
                     estadoFiltro.toLowerCase();
 
-            return coincideBusqueda && coincideEstado;
+            return (
+                coincideBusqueda &&
+                coincideEstado
+            );
         });
 
         resultado.sort((a, b) => {
@@ -795,7 +848,22 @@ function PedidosAdmin() {
                             </thead>
 
                             <tbody>
-                                {pedidosFiltrados.length > 0 ? (
+                                {cargando ? (
+                                    <tr>
+                                        <td
+                                            colSpan="7"
+                                            className="text-center py-5"
+                                        >
+                                            <div className="animate-scale-in">
+                                                <div className="spinner-border"></div>
+
+                                                <p className="mt-3 mb-0">
+                                                    Cargando pedidos...
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : pedidosFiltrados.length > 0 ? (
                                     pedidosFiltrados.map(
                                         (pedido, indice) => {
                                             const estado =
@@ -810,10 +878,13 @@ function PedidosAdmin() {
 
                                             return (
                                                 <tr
-                                                    key={`${obtenerIdPedido(
-                                                        pedido,
-                                                        indice
-                                                    )}-${indice}`}
+                                                    key={
+                                                        pedido.id ||
+                                                        `${obtenerIdPedido(
+                                                            pedido,
+                                                            indice
+                                                        )}-${indice}`
+                                                    }
                                                     className="table-row-animated"
                                                 >
                                                     <td>
@@ -889,7 +960,8 @@ function PedidosAdmin() {
                                                             }
                                                             disabled={
                                                                 estado ===
-                                                                "Entregado"
+                                                                    "Entregado" ||
+                                                                actualizando
                                                             }
                                                         >
                                                             <i className="bi bi-arrow-right"></i>
@@ -942,6 +1014,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-inbox fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Recibido
                                 </h6>
@@ -951,6 +1024,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-search fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Revisado
                                 </h6>
@@ -960,6 +1034,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-gear fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Fabricando
                                 </h6>
@@ -969,6 +1044,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-box-seam fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Preparado
                                 </h6>
@@ -978,6 +1054,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-truck fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Enviado
                                 </h6>
@@ -987,6 +1064,7 @@ function PedidosAdmin() {
                         <div className="col-md-2 mb-3">
                             <div className="p-3 border rounded card-animated">
                                 <i className="bi bi-check-circle fs-3 icon-animated"></i>
+
                                 <h6 className="mt-2">
                                     Entregado
                                 </h6>
@@ -1051,11 +1129,23 @@ function PedidosAdmin() {
 
                                     <div className="col-md-6">
                                         <strong>
+                                            Correo
+                                        </strong>
+
+                                        <p>
+                                            {obtenerEmailCliente(
+                                                pedidoSeleccionado
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="col-md-6">
+                                        <strong>
                                             Fecha
                                         </strong>
 
                                         <p>
-                                            {formatearFecha(
+                                            {formatearFechaCompleta(
                                                 pedidoSeleccionado
                                             )}
                                         </p>
@@ -1078,6 +1168,18 @@ function PedidosAdmin() {
                                                     pedidoSeleccionado
                                                 )}
                                             </span>
+                                        </p>
+                                    </div>
+
+                                    <div className="col-md-6">
+                                        <strong>
+                                            Cantidad de productos
+                                        </strong>
+
+                                        <p>
+                                            {obtenerCantidadProductos(
+                                                pedidoSeleccionado
+                                            )}
                                         </p>
                                     </div>
 
@@ -1120,6 +1222,10 @@ function PedidosAdmin() {
                                                     <th>
                                                         Precio
                                                     </th>
+
+                                                    <th>
+                                                        Subtotal
+                                                    </th>
                                                 </tr>
                                             </thead>
 
@@ -1130,37 +1236,58 @@ function PedidosAdmin() {
                                                     (
                                                         producto,
                                                         productoIndex
-                                                    ) => (
-                                                        <tr
-                                                            key={
-                                                                productoIndex
-                                                            }
-                                                        >
-                                                            <td>
-                                                                {producto?.nombre ||
-                                                                    producto?.name ||
-                                                                    "Producto"}
-                                                            </td>
+                                                    ) => {
+                                                        const datosProducto =
+                                                            producto?.producto ||
+                                                            producto;
 
-                                                            <td>
-                                                                {Number(
-                                                                    producto?.cantidad ||
-                                                                        producto?.cantidadProducto ||
-                                                                        producto?.quantity ||
-                                                                        1
-                                                                )}
-                                                            </td>
+                                                        const cantidad =
+                                                            Number(
+                                                                producto?.cantidad ||
+                                                                    producto?.cantidadProducto ||
+                                                                    producto?.quantity ||
+                                                                    1
+                                                            );
 
-                                                            <td>
-                                                                {formatearMoneda(
-                                                                    producto?.precio ||
-                                                                        producto?.price ||
-                                                                        producto?.valor ||
-                                                                        0
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    )
+                                                        const precio =
+                                                            Number(
+                                                                datosProducto?.precio ||
+                                                                    datosProducto?.price ||
+                                                                    datosProducto?.valor ||
+                                                                    0
+                                                            );
+
+                                                        return (
+                                                            <tr
+                                                                key={
+                                                                    productoIndex
+                                                                }
+                                                            >
+                                                                <td>
+                                                                    {datosProducto?.nombre ||
+                                                                        datosProducto?.name ||
+                                                                        "Producto"}
+                                                                </td>
+
+                                                                <td>
+                                                                    {cantidad}
+                                                                </td>
+
+                                                                <td>
+                                                                    {formatearMoneda(
+                                                                        precio
+                                                                    )}
+                                                                </td>
+
+                                                                <td>
+                                                                    {formatearMoneda(
+                                                                        precio *
+                                                                            cantidad
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }
                                                 )}
                                             </tbody>
                                         </table>
@@ -1184,7 +1311,8 @@ function PedidosAdmin() {
                                     disabled={
                                         obtenerEstado(
                                             pedidoSeleccionado
-                                        ) === "Recibido"
+                                        ) === "Recibido" ||
+                                        actualizando
                                     }
                                 >
                                     <i className="bi bi-arrow-left"></i>
@@ -1202,7 +1330,8 @@ function PedidosAdmin() {
                                     disabled={
                                         obtenerEstado(
                                             pedidoSeleccionado
-                                        ) === "Entregado"
+                                        ) === "Entregado" ||
+                                        actualizando
                                     }
                                 >
                                     <i className="bi bi-arrow-right"></i>
